@@ -57,14 +57,14 @@ public class SettingsActivity extends AppCompatActivity {
         link.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("http://goo.gl/R8vW17")));
+                startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://goo.gl/MnKaUV")));
             }
         });
         copy1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("label", "http://goo.gl/R8vW17");
+                ClipData clip = ClipData.newPlainText("label", "https://goo.gl/MnKaUV");
                 clipboard.setPrimaryClip(clip);
                 Snackbar.make(findViewById(R.id.ContentView), "Link Copied!", Snackbar.LENGTH_LONG).show();
             }
