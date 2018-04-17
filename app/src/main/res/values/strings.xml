@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">Concord</string>
+    <string name="long_shortcut">Virtual Learning Environment</string>
+    <string name="short_shortcut">VLE</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_help">Help</string>
+    <string name="large_text">
+        <b><u>"CONTACT INFORMATION \n"</u></b>
+        "Bug reports/additional help/asking for staff password please contact me at 003587@concordcollege.org.uk. \n\n\n"
+
+        <b><u>"UPDATE AND SHARING\n"</u></b>
+
+        "You can find the latest version of this app at Settings -> Download/Update. You can share "
+        "this app to your friend by pressing 'copy' and send the link to your friend. Please do so "
+        "if you find it useful. \n\n"
+
+        <b><u>"DOWNLOAD\n"</u></b>
+
+        "To download a file either from your email or from the VLE, you need to login from your browser.  "
+        "If download fails, go back to the app and try again. If still fails, please restart the app, and try again. \n\n"
+
+        <b><u>"HOW TO SETUP THE OUTLOOK APP\n"</u></b>
+
+        "After downloading and installing Outlook from the play store, press '"<i>"get started"</i>"'. Enter "
+        "your school email account ("<i><u>"id@concordcollege.org.uk"</u></i>"), and press '"<i>"continue"</i>"'. Choose 'Exchange' "
+        "and press '"<i>"Show advanced settings"</i>"'."
+         "Enter the following:\n"
+        <b>"Server:"</b> " webmail.concordcollege.org.uk;\n"
+        <b>"Domain:"</b> "CONCORD;\n"
+        <b>"Username:"</b> " Your id; \n"
+        <b>"Password:"</b> " Your password;\n"
+        "Press next, and you are done.\n\n"
+
+        <b><i>"TIP: For those of you tech-savvy, the app 'Tasker' could be used to automate some parts of this app. If you are interested in how, contact me. "</i></b>
+
+    </string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+</resources>

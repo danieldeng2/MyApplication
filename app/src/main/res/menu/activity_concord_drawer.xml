@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single" >
+        <item
+            android:id="@+id/nav_wifi"
+            android:icon="@drawable/ic_wifi_black_48dp"
+            android:title="Wifi Login" />
+        <item
+            android:id="@+id/nav_site"
+            android:icon="@drawable/ic_public_black_48dp"
+            android:title="Concord Website" />
+        <item
+            android:id="@+id/nav_vle"
+            android:icon="@drawable/vle"
+            android:title="VLE" />
+        <item
+            android:id="@+id/nav_email_web"
+            android:icon="@android:drawable/ic_dialog_email"
+            android:title="Email(Webmail)" />
+        <item
+            android:id="@+id/nav_email_app"
+            android:icon="@android:drawable/ic_dialog_email"
+            android:title="Email(Outlook)" />
+    </group>
+
+</menu>
