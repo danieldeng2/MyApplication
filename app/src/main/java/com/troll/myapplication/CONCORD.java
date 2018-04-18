@@ -53,7 +53,9 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         if (!(sharedPreferences.contains("username") && sharedPreferences.contains("password"))) {
             startActivity(new Intent(this, SettingsActivity.class));
-            finish();
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
+                finish();
+
         }
         setNavbarcolor(Color.parseColor("#202020"), Color.parseColor("#737373"));
         setShortcut();
