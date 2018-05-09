@@ -2,14 +2,17 @@ package com.troll.myapplication;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -22,7 +25,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.DownloadListener;
 import android.webkit.SslErrorHandler;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -40,26 +42,27 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_concord);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        engine = (WebView) findViewById(R.id.webView);
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        engine = findViewById(R.id.webView);
+        navigationView = findViewById(R.id.nav_view);
         Pbar = findViewById(R.id.pB1);
         sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        if (!(sharedPreferences.contains("username") && sharedPreferences.contains("password"))) {
+        if (!(sharedPreferences.contains("username") && sharedPreferences.contains("password")))
             startActivity(new Intent(this, SettingsActivity.class));
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
-                finish();
 
-        }
         setNavbarcolor(Color.parseColor("#202020"), Color.parseColor("#737373"));
         setShortcut();
         setEngine();
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+//        onStateChange stateChange = new onStateChange();
+//        registerReceiver( stateChange ,intentFilter);
 
         navigationView.setNavigationItemSelectedListener(this);
         Bundle scdata = getIntent().getExtras();
@@ -102,18 +105,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                             + "var use = document.getElementsByName('Submit')[0].click();"
                             + "document.standardPass.Submit.disabled = false;"
                             ;
-
-                    if (Build.VERSION.SDK_INT >= 19) {
-                        view.evaluateJavascript(js, new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String s) {
-                                return;
-                            }
-                        });
-                    } else {
-
-                        view.loadUrl(js);
-                    }
+                    if(username != "" && password != "") view.loadUrl(js);
                 }
             });
 
@@ -130,15 +122,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                             "var inputs = document.getElementById('password').value = '" + password + "' ;"+
                             "var elements = document.getElementsByClassName('btn')[0].click();"
                             ;
-
-                    if (Build.VERSION.SDK_INT >= 19) {
-                        view.evaluateJavascript(js, new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String s) { return;}
-                        });
-                    } else {
-                        view.loadUrl(js);
-                    }
+                    if(username != "" && password != "") view.loadUrl(js);
                 }
             });
 
@@ -177,17 +161,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                             "var inputs = document.getElementById('password').value = '" + password + "' ;"+
                             "var elements = document.getElementsByClassName('ff-login-submit')[0].click();"
                             ;
-
-                    if (Build.VERSION.SDK_INT >= 19) {
-                        view.evaluateJavascript(js, new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String s) {
-                                return;
-                            }
-                        });
-                    } else {
-                        view.loadUrl(js);
-                    }
+                    if(username != "" && password != "") view.loadUrl(js);
                 }
             });
 
@@ -232,12 +206,10 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         }
 
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-
     public void setShortcut(){
         ShortcutManager shortcutManager;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
@@ -291,7 +263,6 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                 view.loadUrl(url);
                 return true;
             }
-
         });
         engine.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, int progress)
@@ -347,7 +318,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     }
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START))
             drawer.closeDrawer(GravityCompat.START);
         else
