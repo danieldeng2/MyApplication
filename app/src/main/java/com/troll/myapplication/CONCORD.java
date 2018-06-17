@@ -1,26 +1,33 @@
 package com.troll.myapplication;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
+import android.net.CaptivePortal;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.DownloadListener;
@@ -35,7 +42,10 @@ import java.util.Arrays;
 
 public class CONCORD extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     boolean WMdownload = false, VLEdonwload = false;
+    private Network net;
+    private CaptivePortal captivePortal;
     WebView engine; NavigationView navigationView;ProgressBar Pbar;SharedPreferences sharedPreferences;
+    String username = "", password = "";
 
 
     @Override
@@ -48,7 +58,6 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
         engine = findViewById(R.id.webView);
         navigationView = findViewById(R.id.nav_view);
         Pbar = findViewById(R.id.pB1);
@@ -56,13 +65,12 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         if (!(sharedPreferences.contains("username") && sharedPreferences.contains("password")))
             startActivity(new Intent(this, SettingsActivity.class));
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(CONCORD.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+
         setNavbarcolor(Color.parseColor("#202020"), Color.parseColor("#737373"));
         setShortcut();
         setEngine();
-//        IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-//        onStateChange stateChange = new onStateChange();
-//        registerReceiver( stateChange ,intentFilter);
 
         navigationView.setNavigationItemSelectedListener(this);
         Bundle scdata = getIntent().getExtras();
@@ -71,11 +79,30 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         onNavigationItemSelected(navigationView.getMenu().getItem(scvalue));
         TextView Account = navigationView.getHeaderView(0).findViewById(R.id.Account);
         Account.setText(sharedPreferences.getString("username", "")+"@concordcollege.org.uk");
+
+        Intent intent = getIntent();
+        if (ConnectivityManager.ACTION_CAPTIVE_PORTAL_SIGN_IN.equals(intent.getAction())) {
+            net = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK);
+            captivePortal = intent.getParcelableExtra(ConnectivityManager.EXTRA_CAPTIVE_PORTAL);
+
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = wifiManager.getConnectionInfo ();
+            String ssid  = info.getSSID();
+            if(!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://connectivitycheck.gstatic.com/generate_204")));
+            }
+
+            navigationView.getMenu().getItem(0).setChecked(true);
+            onNavigationItemSelected(navigationView.getMenu().getItem(0));
+        }
+
     }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
+        username = sharedPreferences.getString("username", "");
+        password = sharedPreferences.getString("password", "");
         if (id == R.id.nav_site) {
 
             engine.loadUrl("http://www.concordcollegeuk.com/");
@@ -87,44 +114,27 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
             });
 
         } else if (id == R.id.nav_wifi) {
+             FillForm("https://192.168.64.1:10443/auth1.html",
+                    "javascript:" +
+                    "var uselessvar1 = document.getElementById('userName').value = '" + username + "';"+
+                    "var inputs = document.getElementsByName('pwd')[0].value = '" + password + "' ;"
+                    + "var use = document.getElementsByName('Submit')[0].click();"
+                    + "document.standardPass.Submit.disabled = false;");
 
-            engine.loadUrl("https://192.168.64.1:10443/auth1.html");
-            engine.setWebViewClient( new WebViewClient() {
-                @Override
-                public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                    handler.proceed();
+            if (net!=null && captivePortal != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    captivePortal.reportCaptivePortalDismissed();
                 }
-
-                public void onPageFinished(WebView view, String url) {
-                    super.onPageFinished(view, url);
-                    final String username = sharedPreferences.getString("username", "");
-                    final String password = sharedPreferences.getString("password", "");
-                    final String js = "javascript:" +
-                            "var uselessvar1 = document.getElementById('userName').value = '" + username + "';"+
-                            "var inputs = document.getElementsByName('pwd')[0].value = '" + password + "' ;"
-                            + "var use = document.getElementsByName('Submit')[0].click();"
-                            + "document.standardPass.Submit.disabled = false;"
-                            ;
-                    if(username != "" && password != "") view.loadUrl(js);
-                }
-            });
+                //finish();
+            }
 
         } else if (id == R.id.nav_email_web) {
-            engine.loadUrl("https://webmail.concordcollege.org.uk/owa/");
-            engine.setWebViewClient( new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    super.onPageFinished(view, url);
-                    final String username = sharedPreferences.getString("username", "");
-                    final String password = sharedPreferences.getString("password", "");
-                    final String js = "javascript:" +
-                            "var uselessvar1 = document.getElementById('username').value = '" + username + "';"+
-                            "var inputs = document.getElementById('password').value = '" + password + "' ;"+
-                            "var elements = document.getElementsByClassName('btn')[0].click();"
-                            ;
-                    if(username != "" && password != "") view.loadUrl(js);
-                }
-            });
+
+            FillForm("https://webmail.concordcollege.org.uk/owa/",
+                    "javascript:" +
+                    "var uselessvar1 = document.getElementById('username').value = '" + username + "';"+
+                    "var inputs = document.getElementById('password').value = '" + password + "' ;"+
+                    "var elements = document.getElementsByClassName('btn')[0].click();");
 
             engine.setDownloadListener(new DownloadListener() {
                 public void onDownloadStart(String url, String userAgent,
@@ -149,21 +159,12 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         }
 
         else if (id == R.id.nav_vle) {
-            engine.loadUrl("https://ff.concordcollege.org.uk/");
-            engine.setWebViewClient( new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    super.onPageFinished(view, url);
-                    final String username = sharedPreferences.getString("username", "");
-                    final String password = sharedPreferences.getString("password", "");
-                    final String js = "javascript:" +
-                            "var uselessvar1 = document.getElementById('username').value = '" + username + "';"+
-                            "var inputs = document.getElementById('password').value = '" + password + "' ;"+
-                            "var elements = document.getElementsByClassName('ff-login-submit')[0].click();"
-                            ;
-                    if(username != "" && password != "") view.loadUrl(js);
-                }
-            });
+
+            FillForm("https://ff.concordcollege.org.uk/",
+                    "javascript:" +
+                    "var uselessvar1 = document.getElementById('username').value = '" + username + "';"+
+                    "var inputs = document.getElementById('password').value = '" + password + "' ;"+
+                    "var elements = document.getElementsByClassName('ff-login-submit')[0].click();");
 
             engine.setDownloadListener(new DownloadListener() {
                 public void onDownloadStart(String url, String userAgent,
@@ -252,6 +253,22 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
             shortcutManager.setDynamicShortcuts(Arrays.asList(wifi, website, VLE, webmail));
         }
     }
+
+    public void FillForm(String url, final String jscode){
+        engine.loadUrl(url);
+        engine.setWebViewClient( new WebViewClient() {
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                handler.proceed();
+            }
+
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if(username != "" && password != "" && jscode != "") view.loadUrl(jscode);
+            }
+        });
+    }
+
     public void setEngine() {
         engine.getSettings().setJavaScriptEnabled(true);
         engine.getSettings().setDomStorageEnabled(true);

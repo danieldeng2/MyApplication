@@ -1,14 +1,22 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'daniel deng'
+            keyPassword '1850248843aA'
+            storeFile file('/home/j/StudioProjects/signature.jks')
+            storePassword '1850248843aA'
+        }
+    }
     compileSdkVersion 26
     buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.troll.myapplication"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 10
-        versionName '2.2.7'
+        versionCode 11
+        versionName '2.4'
     }
     buildTypes {
         release {
