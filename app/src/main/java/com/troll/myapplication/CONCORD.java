@@ -65,9 +65,6 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         if (!(sharedPreferences.contains("username") && sharedPreferences.contains("password")))
             startActivity(new Intent(this, SettingsActivity.class));
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(CONCORD.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-
         setNavbarcolor(Color.parseColor("#202020"), Color.parseColor("#737373"));
         setShortcut();
         setEngine();
@@ -82,6 +79,10 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
         Intent intent = getIntent();
         if (ConnectivityManager.ACTION_CAPTIVE_PORTAL_SIGN_IN.equals(intent.getAction())) {
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(CONCORD.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED)
+                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+
             net = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK);
             captivePortal = intent.getParcelableExtra(ConnectivityManager.EXTRA_CAPTIVE_PORTAL);
 
@@ -101,6 +102,14 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        engine.getSettings().setUserAgentString(System.getProperty("http.agent"));
+        engine.getSettings().setLoadWithOverviewMode(false);
+        engine.getSettings().setUseWideViewPort(false);
+        engine.getSettings().setSupportZoom(false);
+        engine.getSettings().setBuiltInZoomControls(false);
+        engine.getSettings().setDisplayZoomControls(true);
+
         username = sharedPreferences.getString("username", "");
         password = sharedPreferences.getString("password", "");
         if (id == R.id.nav_site) {
@@ -114,6 +123,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
             });
 
         } else if (id == R.id.nav_wifi) {
+
              FillForm("https://192.168.64.1:10443/auth1.html",
                     "javascript:" +
                     "var uselessvar1 = document.getElementById('userName').value = '" + username + "';"+
@@ -129,6 +139,13 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
             }
 
         } else if (id == R.id.nav_email_web) {
+
+            engine.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.170 Safari/537.36");
+            engine.getSettings().setLoadWithOverviewMode(true);
+            engine.getSettings().setUseWideViewPort(true);
+            engine.getSettings().setSupportZoom(true);
+            engine.getSettings().setBuiltInZoomControls(true);
+            engine.getSettings().setDisplayZoomControls(false);
 
             FillForm("https://webmail.concordcollege.org.uk/owa/",
                     "javascript:" +
