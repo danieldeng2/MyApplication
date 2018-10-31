@@ -79,7 +79,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Download/Update: goo.gl/MnKaUV"
+        android:text="Releases: goo.gl/MnKaUV"
         android:id="@+id/link"
  />
 
