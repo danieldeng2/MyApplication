@@ -20,6 +20,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -143,6 +144,14 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     + "var use = document.getElementsByName('Submit')[0].click();"
                     + "document.standardPass.Submit.disabled = false;");
 
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    engine.loadUrl("http://192.168.64.1/dynUserLogin.html?loginDone=1");
+                }
+            }, 1000);
+
+
             if (net!=null && captivePortal != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     captivePortal.reportCaptivePortalDismissed();
@@ -164,6 +173,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     "var uselessvar1 = document.getElementById('username').value = '" + username + "';"+
                     "var inputs = document.getElementById('password').value = '" + password + "' ;"+
                     "var elements = document.getElementsByClassName('btn')[0].click();");
+
 
             engine.setDownloadListener(new DownloadListener() {
                 public void onDownloadStart(String url, String userAgent,
