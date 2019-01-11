@@ -57,7 +57,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     boolean WMdownload = false, VLEdonwload = false;
     private Network net;
     private CaptivePortal captivePortal;
-    WebView engine; NavigationView navigationView;ProgressBar Pbar;SharedPreferences sharedPreferences;
+    WebView engine; NavigationView navigationView;ProgressBar Pbar;SharedPreferences sharedPreferences;Boolean ArrivedFromPortal = false;
     String username = "", password = "";
 
 
@@ -93,23 +93,24 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         Intent intent = getIntent();
         if (ConnectivityManager.ACTION_CAPTIVE_PORTAL_SIGN_IN.equals(intent.getAction())) {
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(CONCORD.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED)
-                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(CONCORD.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            }
             net = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK);
             captivePortal = intent.getParcelableExtra(ConnectivityManager.EXTRA_CAPTIVE_PORTAL);
 
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo info = wifiManager.getConnectionInfo ();
             String ssid  = info.getSSID();
-            if(!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://connectivitycheck.gstatic.com/generate_204")));
+            if(ssid != "<unknown ssid>") {
+                if (!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://connectivitycheck.gstatic.com/generate_204")));
+                }
+                ArrivedFromPortal = true;
+                navigationView.getMenu().getItem(0).setChecked(true);
+                onNavigationItemSelected(navigationView.getMenu().getItem(0));
             }
-
-            navigationView.getMenu().getItem(0).setChecked(true);
-            onNavigationItemSelected(navigationView.getMenu().getItem(0));
         }
-
     }
 
     @Override
@@ -135,6 +136,16 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                 }
             });
 
+        } else if (id == R.id.nav_sharepoint) {
+
+            engine.loadUrl("https://concorduk.sharepoint.com/sites/ConcordCollege");
+            engine.setDownloadListener(new DownloadListener() {
+                public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength)
+                {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                }
+            });
+
         } else if (id == R.id.nav_wifi) {
             loadSSLCertificates();
              FillForm("https://192.168.64.1:10443/auth1.html",
@@ -148,6 +159,11 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
             handler.postDelayed(new Runnable() {
                 public void run() {
                     engine.loadUrl("http://192.168.64.1/dynUserLogin.html?loginDone=1");
+                    if(ArrivedFromPortal){
+                        finish();
+                        Toast.makeText(getBaseContext(), "Logged into Student Wireless! ", Toast.LENGTH_LONG).show();
+                        ArrivedFromPortal = false;
+                    }
                 }
             }, 1000);
 
@@ -156,7 +172,6 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     captivePortal.reportCaptivePortalDismissed();
                 }
-                //finish();
             }
 
         } else if (id == R.id.nav_email_web) {
@@ -257,7 +272,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
             Intent sc = new Intent(this, CONCORD.class);
             sc.setAction(Intent.ACTION_VIEW);
 
-            sc.putExtra("screen", 2);
+            sc.putExtra("screen", 3);
             ShortcutInfo VLE = new ShortcutInfo.Builder(this, "id1")
                     .setShortLabel("VLE")
                     .setLongLabel("Firefly")
@@ -265,7 +280,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     .setIntent(sc)
                     .build();
 
-            sc.putExtra("screen", 3);
+            sc.putExtra("screen", 4);
             ShortcutInfo webmail = new ShortcutInfo.Builder(this, "id2")
                     .setShortLabel("Email")
                     .setLongLabel("Webmail")
@@ -281,6 +296,14 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     .setIntent(sc)
                     .build();
 
+            sc.putExtra("screen", 2);
+            ShortcutInfo sharepoint = new ShortcutInfo.Builder(this, "id5")
+                    .setShortLabel("SharePoint")
+                    .setLongLabel("SharePoint")
+                    .setIcon(Icon.createWithResource(this, R.drawable.scsharepoint))
+                    .setIntent(sc)
+                    .build();
+
             sc.putExtra("screen", 0);
             ShortcutInfo wifi = new ShortcutInfo.Builder(this, "id4")
                     .setShortLabel("Wifi")
@@ -289,7 +312,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     .setIntent(sc)
                     .build();
 
-            shortcutManager.setDynamicShortcuts(Arrays.asList(wifi, website, VLE, webmail));
+            shortcutManager.setDynamicShortcuts(Arrays.asList(wifi,sharepoint, VLE, webmail));
         }
     }
     private static final int[] CERTIFICATES = {
