@@ -34,9 +34,10 @@ import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
+import android.view.inputmethod.BaseInputConnection;
 import android.webkit.DownloadListener;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
@@ -45,7 +46,6 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,14 +57,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
-import static android.content.DialogInterface.BUTTON_POSITIVE;
+import static android.view.KeyEvent.ACTION_DOWN;
 
 public class CONCORD extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    boolean WMdownload = false, VLEdonwload = false;
     private Network net;
     private CaptivePortal captivePortal;
     WebView engine; NavigationView navigationView;ProgressBar Pbar;SharedPreferences sharedPreferences;
-    String username = "", password = "";
+
+    String username = "", password = "";String ssid = "";
+    boolean WMdownload = false, VLEdonwload = false;
 
 
     @Override
@@ -127,8 +128,31 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
         } else if (id == R.id.nav_sharepoint) {
 
-            //TODO: add form filling.
-            engine.loadUrl("https://concorduk.sharepoint.com/sites/ConcordCollege");
+            FillForm("https://concorduk.sharepoint.com/sites/ConcordCollege",
+                    "javascript:" +
+                            "document.getElementsByName('loginfmt')[0].value = '" + username + "@concordcollege.org.uk_';"
+                            +"document.getElementsByName('passwd')[0].value = '" + password + "_';"
+                            +"document.getElementById('idSIButton9').click();"
+           );
+
+
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    BaseInputConnection  mInputConnection = new BaseInputConnection(engine, true);
+                    mInputConnection.sendKeyEvent(new KeyEvent( ACTION_DOWN,KeyEvent.KEYCODE_DEL));
+                    mInputConnection.sendKeyEvent(new KeyEvent( ACTION_DOWN,KeyEvent.KEYCODE_ENTER));
+
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            BaseInputConnection  mInputConnection = new BaseInputConnection(engine, true);
+                            mInputConnection.sendKeyEvent(new KeyEvent( ACTION_DOWN,KeyEvent.KEYCODE_DEL));
+                            mInputConnection.sendKeyEvent(new KeyEvent( ACTION_DOWN,KeyEvent.KEYCODE_ENTER));
+                        }
+                    }, 1500);
+
+                }
+            }, 1500);
+
             engine.setDownloadListener(new DownloadListener() {
                 public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength)
                 {
@@ -146,19 +170,23 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                             "document.getElementsByName('Submit')[0].click();"
              );
 
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
+            new Handler().postDelayed(new Runnable() {
                 public void run() {
                     engine.loadUrl("http://192.168.64.1/dynUserLogin.html?loginDone=1");
 
-                    if(net!=null && captivePortal != null){
-                        finish();
-                        Toast.makeText(getBaseContext(), "Logged into Student Wireless!", Toast.LENGTH_LONG).show();
+                    engine.setWebViewClient(new WebViewClient() {
+                        public void onPageFinished(WebView view, String url) {
+                            if (net != null && captivePortal != null && ssid != "<unknown ssid>") {
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            captivePortal.reportCaptivePortalDismissed();
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                                    captivePortal.reportCaptivePortalDismissed();
+
+                                finish();
+                                Toast.makeText(getBaseContext(), "Logged into Student Wireless!", Toast.LENGTH_LONG).show();
+                            }
                         }
-                    }
+                    });
+
                 }
             }, 1000);
 
@@ -238,8 +266,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.setData(Uri.parse("market://details?id=" + "com.microsoft.office.outlook"));
                 startActivity(intent);
-            }
-            else{
+            } else{
                 intent = new Intent (Intent.ACTION_VIEW );
                 intent.setData(Uri.parse("https://www.microsoft.com/en-gb/outlook-com/"));
                 startActivity(intent);
@@ -275,7 +302,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo info = wifiManager.getConnectionInfo ();
-            String ssid  = info.getSSID();
+            ssid = info.getSSID();
             if(ssid != "<unknown ssid>") {
                 if (!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://connectivitycheck.gstatic.com/generate_204")));
