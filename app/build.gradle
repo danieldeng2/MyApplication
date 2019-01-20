@@ -15,8 +15,9 @@ android {
         applicationId "com.troll.myapplication"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 14
-        versionName '2.65'
+        versionCode 16
+        versionName '2.9'
+        versionNameSuffix 'b'
     }
     buildTypes {
         release {

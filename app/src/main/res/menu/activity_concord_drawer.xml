@@ -11,6 +11,10 @@
             android:icon="@drawable/ic_public_black_48dp"
             android:title="Concord Website" />
         <item
+            android:id="@+id/nav_sharepoint"
+            android:icon="@drawable/sharepoint"
+            android:title="SharePoint" />
+        <item
             android:id="@+id/nav_vle"
             android:icon="@drawable/vle"
             android:title="VLE" />
@@ -22,6 +26,10 @@
             android:id="@+id/nav_email_app"
             android:icon="@android:drawable/ic_dialog_email"
             android:title="Email(Outlook)" />
+        <item
+            android:id="@+id/footer_spacer"
+            android:checkable="false"
+            android:enabled="false"
+            android:title="" />
     </group>
-
 </menu>

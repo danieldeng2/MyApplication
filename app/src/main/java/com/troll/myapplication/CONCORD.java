@@ -37,12 +37,14 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.webkit.DownloadListener;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,6 +96,23 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         TextView Account = navigationView.getHeaderView(0).findViewById(R.id.Account);
         Account.setText(sharedPreferences.getString("username", "")+"@concordcollege.org.uk");
 
+        Button footer_settings = findViewById(R.id.footer_settings);
+        footer_settings.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, SettingsActivity.class));
+            }
+        });
+
+        Button footer_help = findViewById(R.id.footer_help);
+        footer_help.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, Help.class));
+            }
+        });
+
+
         Intent intent = getIntent();
         Bundle scdata = intent.getExtras();
         int scvalue = (scdata==null) ? 0:scdata.getInt("screen");
@@ -132,8 +151,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     "javascript:" +
                             "document.getElementsByName('loginfmt')[0].value = '" + username + "@concordcollege.org.uk_';"
                             +"document.getElementsByName('passwd')[0].value = '" + password + "_';"
-                            +"document.getElementById('idSIButton9').click();"
-           );
+                            +"document.getElementById('idSIButton9').click();");
 
 
             new Handler().postDelayed(new Runnable() {
@@ -176,7 +194,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
                     engine.setWebViewClient(new WebViewClient() {
                         public void onPageFinished(WebView view, String url) {
-                            if (net != null && captivePortal != null && ssid != "<unknown ssid>") {
+                            if (net != null && captivePortal != null && (ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                                     captivePortal.reportCaptivePortalDismissed();
@@ -291,27 +309,27 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     public void processPortalIntent(Intent intent){
         if (ConnectivityManager.ACTION_CAPTIVE_PORTAL_SIGN_IN.equals(intent.getAction())) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(CONCORD.this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
-                showMessageOKCancel("Please allow location permission to identify whether the WiFi connected is Student Wireless. ", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+                showMessageOKCancel("Please allow location permission to identify whether the WiFi connected is Student Wireless. ",
+                    new DialogInterface.OnClickListener() {public void onClick(DialogInterface dialog, int which) {
                         ActivityCompat.requestPermissions(CONCORD.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
                     }
                 });
-            }
-            net = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK);
-            captivePortal = intent.getParcelableExtra(ConnectivityManager.EXTRA_CAPTIVE_PORTAL);
+        }
+        net = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK);
+        captivePortal = intent.getParcelableExtra(ConnectivityManager.EXTRA_CAPTIVE_PORTAL);
 
-            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            WifiInfo info = wifiManager.getConnectionInfo ();
-            ssid = info.getSSID();
-            if(ssid != "<unknown ssid>") {
-                if (!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://connectivitycheck.gstatic.com/generate_204")));
-                }
-                navigationView.getMenu().getItem(0).setChecked(true);
-                onNavigationItemSelected(navigationView.getMenu().getItem(0));
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo info = wifiManager.getConnectionInfo ();
+        ssid = info.getSSID();
+        if(ssid != "<unknown ssid>") {
+            if (!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://connectivitycheck.gstatic.com/generate_204")));
             }
+            navigationView.getMenu().getItem(0).setChecked(true);
+            onNavigationItemSelected(navigationView.getMenu().getItem(0));
         }
     }
+}
 
     public void setShortcut(){
         ShortcutManager shortcutManager;
@@ -525,15 +543,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        }
-        else if (id == R.id.action_help){
-            startActivity(new Intent(this, Help.class));
-            return true;
-        }
-        else if (id == R.id.action_browser){
+        if (id == R.id.action_browser){
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(engine.getUrl()) ) );
             return true;
         }

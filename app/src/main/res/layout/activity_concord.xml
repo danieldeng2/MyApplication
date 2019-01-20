@@ -20,7 +20,45 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_concord"
-        app:menu="@menu/activity_concord_drawer" />
+        app:menu="@menu/activity_concord_drawer" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:clickable="true"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/footer_settings"
+                android:layout_width="50pt"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:paddingHorizontal="20dp"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:drawableLeft="@drawable/baseline_settings_black_24"
+                android:drawableTint="#aa000000"
+                android:text="Settings"
+                android:textAllCaps="false"
+                android:textColor="#aa000000" />
+
+            <Button
+                android:id="@+id/footer_help"
+                android:layout_width="50pt"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:paddingHorizontal="20dp"
+                android:background="?attr/selectableItemBackground"
+                android:drawableLeft="@drawable/baseline_help_black_24"
+                android:drawableTint="#aa000000"
+                android:gravity="center"
+                android:text="Help"
+                android:textAllCaps="false"
+                android:textColor="#aa000000" />
+        </LinearLayout>
+
+    </android.support.design.widget.NavigationView>
 
 
 

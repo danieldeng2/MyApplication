@@ -12,6 +12,5 @@ public class Help extends AppCompatActivity {
         setContentView(R.layout.activity_help);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
     }
 }
