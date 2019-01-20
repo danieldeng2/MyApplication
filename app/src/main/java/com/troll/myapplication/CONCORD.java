@@ -1,7 +1,9 @@
 package com.troll.myapplication;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.net.CaptivePortal;
@@ -19,6 +23,7 @@ import android.net.http.SslCertificate;
 import android.net.http.SslError;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,18 +44,28 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
+import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -59,15 +74,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
+
 import static android.view.KeyEvent.ACTION_DOWN;
 
 public class CONCORD extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private Network net;
+    private Network net;Bitmap bmp;
     private CaptivePortal captivePortal;
     WebView engine; NavigationView navigationView;ProgressBar Pbar;SharedPreferences sharedPreferences;
 
-    String username = "", password = "";String ssid = "";
-    boolean WMdownload = false, VLEdonwload = false;
+    String username = "", password = "", ssid = "";
+    boolean WMdownload = false, VLEdonwload = false, UpdateImage = false;
+
 
 
     @Override
@@ -91,10 +108,13 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         setNavbarColor(Color.parseColor("#202020"), Color.parseColor("#737373"));
         setShortcut();
         setEngine();
+        CookieManager.getInstance().setAcceptCookie(true);
 
         navigationView.setNavigationItemSelectedListener(this);
         TextView Account = navigationView.getHeaderView(0).findViewById(R.id.Account);
-        Account.setText(sharedPreferences.getString("username", "")+"@concordcollege.org.uk");
+        Account.setText(sharedPreferences.getString("username", "id")+"@concordcollege.org.uk");
+        TextView AccountName = navigationView.getHeaderView(0).findViewById(R.id.AccountName);
+        AccountName.setText(sharedPreferences.getString("AccountName", "Account"));
 
         Button footer_settings = findViewById(R.id.footer_settings);
         footer_settings.setOnClickListener(new Button.OnClickListener() {
@@ -119,8 +139,23 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         navigationView.getMenu().getItem(scvalue).setChecked(true);
         onNavigationItemSelected(navigationView.getMenu().getItem(scvalue));
         processPortalIntent(intent);
+
+
+        try {
+            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            File f=new File( directory, "profile.jpg");
+            bmp = BitmapFactory.decodeStream(new FileInputStream(f));
+            ImageView img= navigationView.getHeaderView(0).findViewById(R.id.ProfilePic);
+            img.setImageBitmap(bmp);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
     }
 
+    @SuppressLint("JavascriptInterface")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -246,6 +281,8 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
         } else if (id == R.id.nav_vle) {
 
+
+
             FillForm("https://ff.concordcollege.org.uk/",
                     "javascript:" +
                             "document.getElementById('username').value = '" + username + "';"+
@@ -270,7 +307,37 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     }
 
                 }
+
+
             });
+
+
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    engine.evaluateJavascript("document.getElementsByTagName('em')[0].innerHTML", new ValueCallback<String>() {
+                        @Override public void onReceiveValue(String value) {
+
+                            value = value.replaceAll("\"", "");
+                            if(!value.equalsIgnoreCase("null")){
+                                sharedPreferences.edit().putString("AccountName", value).apply();
+                                TextView AccountName = navigationView.getHeaderView(0).findViewById(R.id.AccountName);
+                                AccountName.setText(value);
+                                Log.v("value ", value);
+                            }
+
+
+                        }
+                    });
+
+                    engine.evaluateJavascript("document.getElementsByName('ff:userGuid')[0].getAttribute('content')", new ValueCallback<String>() {
+                        @Override public void onReceiveValue(String value) {
+                            value = value.replaceAll("\"", "");
+                            new LoadImage().execute(value);
+                        }
+                    });
+
+                }
+            }, 5000);
 
         } else if (id == R.id.nav_email_app) {
 
@@ -297,6 +364,8 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         return true;
     }
 
+
+
     private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
         final SpannableString s = new SpannableString(message);
         final AlertDialog d = new AlertDialog.Builder(CONCORD.this)
@@ -319,7 +388,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         captivePortal = intent.getParcelableExtra(ConnectivityManager.EXTRA_CAPTIVE_PORTAL);
 
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = wifiManager.getConnectionInfo ();
+        WifiInfo info = wifiManager.getConnectionInfo();
         ssid = info.getSSID();
         if(ssid != "<unknown ssid>") {
             if (!(ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
@@ -330,6 +399,53 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         }
     }
 }
+
+    class LoadImage extends AsyncTask<String, Void, Void> {
+
+
+        protected Void doInBackground(String...value) {
+            try {
+
+                URL url = new URL("https://ff.concordcollege.org.uk/profilepic.aspx?guid="+value[0]+"&size=regular");
+
+                URLConnection connection = url.openConnection();
+                connection.setRequestProperty("Cookie",CookieManager.getInstance().getCookie("https://ff.concordcollege.org.uk/dashboard/"));
+                InputStream response = connection.getInputStream();
+                UpdateImage = ("https://ff.concordcollege.org.uk/profilepic.aspx?guid="+value[0]+"&size=regular").equalsIgnoreCase(connection.getURL().toString());
+                bmp = BitmapFactory.decodeStream(response);
+
+            }catch(Exception e){e.printStackTrace();}
+            return null;
+        }
+
+        protected void onPostExecute(Void v) {
+            if(UpdateImage){
+                ImageView imageView = navigationView.getHeaderView(0).findViewById(R.id.ProfilePic);
+                saveToInternalStorage(bmp);
+                imageView.setImageBitmap(bmp);
+            }
+        }
+    }
+
+    private String saveToInternalStorage(Bitmap bitmapImage){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File mypath=new File(directory,"profile.jpg");
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
 
     public void setShortcut(){
         ShortcutManager shortcutManager;
@@ -457,7 +573,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if(username != "" && password != "") view.loadUrl(jscode);
+                if(!username.equals("") && !password.equals("")) view.loadUrl(jscode);
             }
         });
     }

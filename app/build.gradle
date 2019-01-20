@@ -13,10 +13,10 @@ android {
     buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.troll.myapplication"
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 26
-        versionCode 16
-        versionName '2.9'
+        versionCode 17
+        versionName '3.0'
         versionNameSuffix 'b'
     }
     buildTypes {

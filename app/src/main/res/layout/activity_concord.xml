@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:clickable="true"
+            android:focusable="true"
             android:orientation="horizontal">
 
             <Button
@@ -37,9 +38,9 @@
                 android:paddingHorizontal="20dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
-                android:drawableLeft="@drawable/baseline_settings_black_24"
+                android:drawableStart="@drawable/baseline_settings_black_24"
                 android:drawableTint="#aa000000"
-                android:text="Settings"
+                android:text="@string/title_activity_settings"
                 android:textAllCaps="false"
                 android:textColor="#aa000000" />
 
@@ -50,10 +51,10 @@
                 android:layout_weight="1"
                 android:paddingHorizontal="20dp"
                 android:background="?attr/selectableItemBackground"
-                android:drawableLeft="@drawable/baseline_help_black_24"
+                android:drawableStart="@drawable/baseline_help_black_24"
                 android:drawableTint="#aa000000"
                 android:gravity="center"
-                android:text="Help"
+                android:text="@string/title_activity_help"
                 android:textAllCaps="false"
                 android:textColor="#aa000000" />
         </LinearLayout>
