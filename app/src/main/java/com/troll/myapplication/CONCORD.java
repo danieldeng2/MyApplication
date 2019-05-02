@@ -81,6 +81,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
     private Network net;Bitmap bmp;
     private CaptivePortal captivePortal;
     WebView engine; NavigationView navigationView;ProgressBar Pbar;SharedPreferences sharedPreferences;
+    ImageView imageView;
 
     String username = "", password = "", ssid = "";
     boolean WMdownload = false, VLEdonwload = false, UpdateImage = false;
@@ -115,22 +116,21 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         Account.setText(sharedPreferences.getString("username", "id")+"@concordcollege.org.uk");
         TextView AccountName = navigationView.getHeaderView(0).findViewById(R.id.AccountName);
         AccountName.setText(sharedPreferences.getString("AccountName", "Account"));
+        imageView = navigationView.getHeaderView(0).findViewById(R.id.ProfilePic);
 
-        Button footer_settings = findViewById(R.id.footer_settings);
-        footer_settings.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(CONCORD.this, SettingsActivity.class));
-            }
-        });
+        setClickListeners();
 
-        Button footer_help = findViewById(R.id.footer_help);
-        footer_help.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(CONCORD.this, Help.class));
-            }
-        });
+        try {
+            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            File f=new File( directory, "profile.jpg");
+            bmp = BitmapFactory.decodeStream(new FileInputStream(f));
+            imageView.setImageBitmap(bmp);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
 
 
         Intent intent = getIntent();
@@ -139,20 +139,44 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         navigationView.getMenu().getItem(scvalue).setChecked(true);
         onNavigationItemSelected(navigationView.getMenu().getItem(scvalue));
         processPortalIntent(intent);
+    }
 
+    public void setClickListeners(){
+        TextView Account = navigationView.getHeaderView(0).findViewById(R.id.Account);
+        TextView AccountName = navigationView.getHeaderView(0).findViewById(R.id.AccountName);
+        Button footer_help = findViewById(R.id.footer_help);
+        Button footer_settings = findViewById(R.id.footer_settings);
+        footer_settings.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, SettingsActivity.class));
+            }
+        });
 
-        try {
-            ContextWrapper cw = new ContextWrapper(getApplicationContext());
-            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-            File f=new File( directory, "profile.jpg");
-            bmp = BitmapFactory.decodeStream(new FileInputStream(f));
-            ImageView img= navigationView.getHeaderView(0).findViewById(R.id.ProfilePic);
-            img.setImageBitmap(bmp);
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
+        footer_help.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, Help.class));
+            }
+        });
+        Account.setOnClickListener(new TextView.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, SettingsActivity.class));
+            }
+        });
+        AccountName.setOnClickListener(new TextView.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, SettingsActivity.class));
+            }
+        });
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(CONCORD.this, SettingsActivity.class));
+            }
+        });
     }
 
     @SuppressLint("JavascriptInterface")
@@ -189,6 +213,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                             +"document.getElementById('idSIButton9').click();");
 
 
+            //because Microsoft does not allow autofill, the following code edits the field by manually deleting the additional '_' and presses enter.
             new Handler().postDelayed(new Runnable() {
                 public void run() {
                     BaseInputConnection  mInputConnection = new BaseInputConnection(engine, true);
@@ -230,12 +255,14 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                     engine.setWebViewClient(new WebViewClient() {
                         public void onPageFinished(WebView view, String url) {
                             if (net != null && captivePortal != null && (ssid.equalsIgnoreCase("Student Wireless") || ssid.equalsIgnoreCase("\"Student Wireless\""))) {
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                                    captivePortal.reportCaptivePortalDismissed();
-
-                                finish();
-                                Toast.makeText(getBaseContext(), "Logged into Student Wireless!", Toast.LENGTH_LONG).show();
+                                new Handler().postDelayed(new Runnable() {
+                                    public void run() {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                                        captivePortal.reportCaptivePortalDismissed();
+//                                finish();
+//                                Toast.makeText(getBaseContext(), "Logged into Student Wireless!", Toast.LENGTH_LONG).show();
+                                    }
+                                }, 3000);
                             }
                         }
                     });
@@ -420,7 +447,6 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
         protected void onPostExecute(Void v) {
             if(UpdateImage){
-                ImageView imageView = navigationView.getHeaderView(0).findViewById(R.id.ProfilePic);
                 saveToInternalStorage(bmp);
                 imageView.setImageBitmap(bmp);
             }

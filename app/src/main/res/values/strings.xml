@@ -8,34 +8,31 @@
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_help">Help</string>
     <string name="large_text">
-        <b><u>"CONTACT INFORMATION \n"</u></b>
-        "Bug reports/additional help/asking for staff password please contact me at 003587@concordcollege.org.uk. \n\n\n"
+        <b>"CONTACT INFORMATION \n\n"</b>
+        "Bug reports/additional help, contact me at 003587@concordcollege.org.uk. If you'd like to help with the development of the app or get access to early features, feel free to send me an email. \n\n\n\n"
 
-        <b><u>"UPDATE AND SHARING\n"</u></b>
+        <b>"UPDATE AND SHARING\n\n"</b>
 
         "You can find the latest version of this app at Settings -> Download/Update. You can share "
         "this app to your friend by pressing 'copy' and send the link to your friend. Please do so "
-        "if you find it useful. \n\n"
+        "if you find it useful. \n\n\n\n"
 
-        <b><u>"DOWNLOAD\n"</u></b>
+        <b>"DOWNLOAD\n\n"</b>
 
         "To download a file either from your email or from the VLE, you need to login from your browser.  "
-        "If download fails, go back to the app and try again. If still fails, please restart the app, and try again. \n\n"
+        "If download fails, go back to the app and try again. If still fails, please restart the app, and try again. \n\n\n\n"
 
-        <b><u>"HOW TO SETUP THE OUTLOOK APP\n"</u></b>
+        <b>"HOW TO SETUP THE OUTLOOK APP\n\n"</b>
 
         "After downloading and installing Outlook from the play store, press '"<i>"get started"</i>"'. Enter "
-        "your school email account ("<i><u>"id@concordcollege.org.uk"</u></i>"), and press '"<i>"continue"</i>"'. Choose 'Exchange' "
+        "your school email account ("<i>"id@concordcollege.org.uk"</i>"), and press '"<i>"continue"</i>"'. Choose 'Exchange' "
         "and press '"<i>"Show advanced settings"</i>"'."
          "Enter the following:\n"
         <b>"Server:"</b> " webmail.concordcollege.org.uk;\n"
         <b>"Domain:"</b> "CONCORD;\n"
         <b>"Username:"</b> " Your id; \n"
         <b>"Password:"</b> " Your password;\n"
-        "Press next, and you are done.\n\n"
-
-        <b><i>"TIP: For those of you tech-savvy, the app 'Tasker' could be used to automate some parts of this app. If you are interested in how, contact me. "</i></b>
-
+        "Press next, and you are done.\n\n\n\n"
     </string>
     <string name="title_activity_login">Sign in</string>
 
