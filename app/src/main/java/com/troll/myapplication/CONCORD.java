@@ -250,7 +250,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
             new Handler().postDelayed(new Runnable() {
                 public void run() {
-                    engine.loadUrl("http://192.168.64.1/dynUserLogin.html?loginDone=1");
+                    engine.loadUrl("https://192.168.64.1:10443/dynUserLogin.html?loginDone=1");
 
                     engine.setWebViewClient(new WebViewClient() {
                         public void onPageFinished(WebView view, String url) {
