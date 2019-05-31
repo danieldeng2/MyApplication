@@ -19,8 +19,6 @@ import android.net.CaptivePortal;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.Uri;
-import android.net.http.SslCertificate;
-import android.net.http.SslError;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -37,7 +35,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -46,7 +43,6 @@ import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
-import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -56,7 +52,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -66,13 +61,7 @@ import java.io.InputStream;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Set;
 
 
 import static android.view.KeyEvent.ACTION_DOWN;
@@ -240,8 +229,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
         } else if (id == R.id.nav_wifi) {
 
-            loadSSLCertificates();
-             FillForm("https://192.168.64.1:10443/auth1.html",
+             FillForm("https://web64.concordcollege.org.uk/auth1.html",
                      "javascript:" +
                             "document.getElementById('userName').value = '" + username + "';"+
                             "document.getElementsByName('pwd')[0].value = '" + password + "';"+
@@ -250,7 +238,7 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
 
             new Handler().postDelayed(new Runnable() {
                 public void run() {
-                    engine.loadUrl("https://192.168.64.1:10443/dynUserLogin.html?loginDone=1");
+                    engine.loadUrl("https://web64.concordcollege.org.uk/dynUserLogin.html?loginDone=1");
 
                     engine.setWebViewClient(new WebViewClient() {
                         public void onPageFinished(WebView view, String url) {
@@ -259,8 +247,6 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
                                     public void run() {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                                         captivePortal.reportCaptivePortalDismissed();
-//                                finish();
-//                                Toast.makeText(getBaseContext(), "Logged into Student Wireless!", Toast.LENGTH_LONG).show();
                                     }
                                 }, 3000);
                             }
@@ -524,79 +510,10 @@ public class CONCORD extends AppCompatActivity implements NavigationView.OnNavig
         }
     }
 
-    private static final int[] CERTIFICATES = {
-            R.raw.concordcollege,
-    };
-    private ArrayList<SslCertificate> certificates = new ArrayList<>();
-    private void loadSSLCertificates() {
-        try {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            for (int rawId : CERTIFICATES) {
-                InputStream inputStream = getResources().openRawResource(rawId);
-                InputStream certificateInput = new BufferedInputStream(inputStream);
-                try {
-                    Certificate certificate = certificateFactory.generateCertificate(certificateInput);
-                    if (certificate instanceof X509Certificate) {
-                        X509Certificate x509Certificate = (X509Certificate) certificate;
-                        SslCertificate sslCertificate = new SslCertificate(x509Certificate);
-                        certificates.add(sslCertificate);
-                        Log.w("Cert: ", ""+rawId);
-                    } else {
-                        Log.w("Cert: ", "Wrong Certificate format: " + rawId);
-                    }
-                } catch (CertificateException exception) {
-                    Log.w("Cert: ", "Cannot read certificate: " + rawId);
-                } finally {
-                    try {
-                        certificateInput.close();
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void FillForm(String url, final String jscode){
         engine.loadUrl(url);
         engine.setWebViewClient( new WebViewClient() {
             @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                SslCertificate serverCertificate = error.getCertificate();
-                Bundle serverBundle = SslCertificate.saveState(serverCertificate);
-                for (SslCertificate appCertificate : certificates) {
-                    if (TextUtils.equals(serverCertificate.toString(), appCertificate.toString())) { // First fast check
-                        Bundle appBundle = SslCertificate.saveState(appCertificate);
-                        Set<String> keySet = appBundle.keySet();
-                        boolean matches = true;
-                        for (String key : keySet) {
-                            Object serverObj = serverBundle.get(key);
-                            Object appObj = appBundle.get(key);
-                            if (serverObj instanceof byte[] && appObj instanceof byte[]) {     // key "x509-certificate"
-                                if (!Arrays.equals((byte[]) serverObj, (byte[]) appObj)) {
-                                    matches = false;
-                                    break;
-                                }
-                            } else if ((serverObj != null) && !serverObj.equals(appObj)) {
-                                matches = false;
-                                break;
-                            }
-                        }
-                        if (matches) {
-                            handler.proceed();
-                            return;
-                        }
-                    }
-                }
-
-                handler.cancel();
-                Log.w("Cert: ", "SSL Error " + error.getPrimaryError());
-
-            }
-
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if(!username.equals("") && !password.equals("")) view.loadUrl(jscode);
