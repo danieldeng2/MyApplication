@@ -16,6 +16,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.autofill.AutofillManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -49,9 +51,16 @@ public class SettingsActivity extends AppCompatActivity {
         change_input.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                name_input.onEditorAction(EditorInfo.IME_ACTION_DONE);
                 sharedPreferences.edit().putString("username", name_input.getText().toString()).apply();
+                password_input.onEditorAction(EditorInfo.IME_ACTION_DONE);
                 sharedPreferences.edit().putString("password", password_input.getText().toString()).apply();
+
                 startActivity(new Intent(getApplicationContext(), CONCORD.class));
+                if (android.os.Build.VERSION.SDK_INT >= 26) {
+                    AutofillManager am = getSystemService(AutofillManager.class);
+                    am.commit();
+                }
             }
         });
         link.setOnClickListener(new View.OnClickListener() {
